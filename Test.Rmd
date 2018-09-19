@@ -1,7 +1,7 @@
 ---
 title: "AMF"
 author: "M. Maltz"
-date: '20180828'
+date: '20180919'
 output:
   html_document: default
   pdf_document: default
@@ -179,14 +179,14 @@ ssugenusREADRICH<-ssugenusREADRICH%>%
   left_join(metassu, by='ID')
 str(ssugenusREADRICH)  
 
-filename<-paste0(date, '_ssu_genus_read_rich.csv')
+filename<-paste0(date, '_ssu_genera_read_rich.csv')
 write.csv(ssugenusREADRICH, file = filename, row.names=FALSE)
 ```
 #move ID to single line and genus to the length
 ```{r}
 ###For ssufamily, moves ID to single line and genus to the length
-LssugenusOTURICH <- dcast(ssugenus, ID ~ ssugenus, value.var = "Genus_OTU_Richness",  fun.aggregate = sum )
-LssugenusOTUREAD <- dcast(ssugenus, ID ~ ssugenus, value.var = "Genus_Read_Abundance",  fun.aggregate = sum )
+LssugenusOTURICH <- dcast(ssugenera, ID ~ ssugenus, value.var = "Genus_OTU_Richness",  fun.aggregate = sum )
+LssugenusOTUREAD <- dcast(ssugenera, ID ~ ssugenus, value.var = "Genus_Read_Abundance",  fun.aggregate = sum )
 
 head(LssugenusOTUREAD)
 ```
@@ -323,7 +323,7 @@ WLTreat.div
 dvpostWL.mat=comm.mat[(comm.grps$Site=="WL" & comm.grps$Description=="RecipientPost") | comm.grps$Site=="DS",]
 dvpostWL.grps=comm.grps[(comm.grps$Site=="WL" & comm.grps$Description=="RecipientPost") | comm.grps$Site=="DS",]
 distDWL.bc<-vegdist(dvpostWL.mat, method='bray', na.rm=TRUE)
-DWLTreat.div<-adonis2(distDWL.bc~Description, strata= Treat, data=dvpost.grps, permutations = 999, method="bray")
+DWLTreat.div<-adonis2(distDWL.bc~Description, strata= Treat, data=dvpostWL.grps, permutations = 999, method="bray")
 DWLTreat.div
 
 
@@ -400,8 +400,8 @@ AMTD.div
 AMTSD.div<-adonis2(dist.bc~Treat+Site*Description, data=comm.grps, permutations = 999, method="bray")
 AMTSD.div
 
-AMD_ST_J.div<-adonis2(dist.bc~Description+Site*Treat, data=comm.grps, permutations = 999, method="bray")
-AMD_ST_J.div
+#AMD_ST_J.div<-adonis2(dist.bc~Description+Site*Treat, data=comm.grps, permutations = 999, method="bray")
+#AMD_ST_J.div
 
 AMD_ST_BC.div<-adonis2(dist.bc~Description+Site+Treat, data=comm.grps, permutations = 999, method="bray")
 AMD_ST_BC.div
@@ -475,10 +475,7 @@ library(ggplot2)
 
 The code was stopping at this point, and I created a new chunk below
 
-
-```{r}
-
-#SSamf.plot<-cbind(y, NMDS1, NMDS2, x)
+SSamf.plot<-cbind(y, NMDS1, NMDS2, x)
 
 Sp<-ggplot(SSamf.plot, aes(NMDS1, NMDS2, color=Site))+
   geom_point(position=position_jitter(.1), shape=7)+##separates overlapping points
@@ -497,28 +494,90 @@ plot<-ggplot(SSamf.plot, aes(NMDS1, NMDS2, color=Treat))+
   theme_minimal()+geom_text(data=amf.plot,aes(NMDS1, NMDS2, label=Site), position=position_jitter(.35))+
   annotate("text", x=min(NMDS1), y=min(NMDS2), label=paste('Stress =',round(amfMDS$stress,3))) #add stress to plot
 plot
-```
 
-```{r}
-#ad.bc<-adonis2(dist.bc~Month+Year+Elevation, data=grps, permutations=1000)
+#ad.bc<-adonis2(dist.bc~Treat+Metadata1+Metadata, data=grps, permutations=1000)
 #ad.bc
-
-#ad.j<-adonis2(dist.j~Month+Year+Elevation, data=grps, permutations=1000)
-#ad.j
-
-
-```
-
-
-
-
-```{r}
-#salvage.div<-adonis2(bird.dist~DIVERSITY, data=birds, permutations = 999, method="bray", strata="PLOT")
-#bird.div
-```
 
 Examining the statistic support for increased rhizophilic richness in recipientpost plots
 ```{r glm on Rhizophilic richness and metadata}
+
+ssu.fg <- ssu %>%
+  mutate(Functional.Group = case_when(
+    ssufamily %in% c('Glomeraceae','Claroideoglomeraceae', 'Paraglomeraceae') ~ 'Rhizophilic',
+    ssufamily %in% c('Gigasporaceae', 'Diversisporaceae') ~ 'Edaphophilic',
+    ssufamily %in% c('Ambisporaceae', 'Archaeosporaceae','Acaulosporaceae') ~ 'Ancestral'
+  ))
+
+ssul <-melt(ssu.fg, variable.name='ID',value.name='ssureads')
+str(ssul)
+
+ssuguildREADRICH<- data.frame(ssul %>%
+                                group_by(ID,Functional.Group) %>%
+                                summarise(OTU_Richness_Sample = length(unique(ssuotu[ssureads>0])),
+                                         Read_Abundance_Sample = sum(ssureads)))
+ssufamily <- data.frame(ssul %>%
+                          group_by(ID, ssufamily) %>%
+                          summarise(Family_OTU_Richness = length(unique(ssuotu[ssureads>0])), 
+                                    Family_Read_Abundance = sum(ssureads)))
+
+colnames(metassu) # need to edit for appropriate headers
+names(metassu)[names(metassu) == 'SampleID2'] <- 'ID'
+
+ssufamily<-ssufamily%>%
+  left_join(metassu, by='ID')
+str(ssufamily)
+
+ssuguildREADRICH<-ssuguildREADRICH%>%
+  left_join(metassu, by='ID')
+str(ssuguildREADRICH)  
+
+filename<-paste0(date, '_ssu_funcguild_read_rich.csv')
+write.csv(ssuguildREADRICH, file = filename, row.names=FALSE)
+
+LssufamilyOTURICH <- dcast(ssufamily, ID ~ ssufamily, value.var = "Family_OTU_Richness",  fun.aggregate = sum )
+LssufamilyOTUREAD <- dcast(ssufamily, ID ~ ssufamily, value.var = "Family_Read_Abundance",  fun.aggregate = sum )
+
+head(LssufamilyOTUREAD)
+
+ssuguildREADRICHlong<- data.frame(ssul %>%
+                                group_by(ID) %>%
+                                summarise(OTU_Richness_Sample = length(unique(ssuotu[ssureads>0])),
+                                Ancestral_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Ancestral"])),
+                                Edaphophilic_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Edaphophilic"])),
+                                Rhizophilic_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Rhizophilic"])),
+                                Ancestral_Read_Abundance = sum(ssureads[Functional.Group == "Ancestral"]),
+                                Edaphophilic_Read_Abundance = sum(ssureads[Functional.Group == "Edaphophilic"]),
+                                Rhizophilic_Read_Abundance = sum(ssureads[Functional.Group == "Rhizophilic"]),
+                                Read_Abundance_Sample = sum(ssureads)))
+View(ssuguildREADRICHlong)
+ssuguildREADRICHlong <- merge(ssuguildREADRICHlong, metassu, by = "ID")
+
+filename<-paste0(date, '_ssu_funcguild_read_rich.csv')
+write.csv(ssuguildREADRICHlong, file = filename, row.names=FALSE)
+
+str(ssuguildREADRICHlong)
+
+ssuguildREAD <- ssul %>% 
+  group_by(ID) %>%
+  summarise(Ancestral_Read_Abundance = sum(ssureads[Functional.Group == "Ancestral"]),
+            Edaphophilic_Read_Abundance = sum(ssureads[Functional.Group == "Edaphophilic"]),
+            Rhizophilic_Read_Abundance = sum(ssureads[Functional.Group == "Rhizophilic"]))
+
+
+ssuguildRICH<- ssul %>%
+  group_by(ID) %>%
+  summarise(OTU_Richness_Sample = length(unique(ssuotu[ssureads>0])),
+            Ancestral_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Ancestral"])),
+            Edaphophilic_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Edaphophilic"])),
+            Rhizophilic_Richness = length(unique(ssuotu[ssureads>0 & Functional.Group =="Rhizophilic"]))) 
+head(ssuguildRICH)
+
+ssuguildRICH<-merge(ssuguildRICH, metassu, by="ID")
+ssuguildREAD<-merge(ssuguildREAD, metassu, by="ID")
+str(ssuguildRICH)
+str(ssuguildREAD)
+
+
 y<-ssuguildRICH$Rhizophilic_Richness
 str(y)
 D<-ssuguildRICH$Description
