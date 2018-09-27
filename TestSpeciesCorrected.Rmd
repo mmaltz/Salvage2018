@@ -1,7 +1,7 @@
 ---
 title: "AMF"
 author: "M. Maltz"
-date: '20180919'
+date: '20180925'
 output:
   html_document: default
   pdf_document: default
@@ -80,7 +80,7 @@ ssu<-fread('CSS_table_sorted.txt')
 str(ssu)
 
 ## mapping data
-metassu<-fread('mapSal.txt', header=TRUE)
+metassu<-fread('mapSal18924.txt', header=TRUE)
 metassu$Year<-as.character(metassu$Year)
 metassu$Rep<-as.factor(metassu$Rep)
 metassu$Treat<-as.factor(metassu$Treat)
