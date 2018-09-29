@@ -81,6 +81,7 @@ str(ssu)
 
 ## mapping data
 metassu<-fread('mapSal18924.txt', header=TRUE)
+str(metassu)
 metassu$Year<-as.character(metassu$Year)
 metassu$Rep<-as.factor(metassu$Rep)
 metassu$Treat<-as.factor(metassu$Treat)
