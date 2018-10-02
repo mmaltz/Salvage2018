@@ -1,4 +1,4 @@
-#SampleID	BarcodeSequence	LinkerPrimerSequence	Location	Project	Year	Site	Treat	Rep	HL	CN	TSDel	Description	SampleID2
+0#SampleID	BarcodeSequence	LinkerPrimerSequence	Location	Project	Year	Site	Treat	Rep	HL	CN	TSDel	Description	SampleID2
 34	GAGATCGTTGGGTGAT		B5	MM-Salvage	2015	DS	O	1	1.673079829		NA	Donor	MMS938
 35	GAGATCGTTACTGTGC		C5	MM-Salvage	2015	DS	O	2	1.518802467		NA	Donor	MMS939
 36	GAGATCGTAGAGTGTG		D5	MM-Salvage	2015	DS	O	3	0.669102245		NA	Donor	MMS890
