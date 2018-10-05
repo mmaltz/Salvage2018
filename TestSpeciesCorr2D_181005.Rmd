@@ -612,22 +612,100 @@ dim(dvpostHH.grps)
 ```
 
 ```{r test code}
-View(ssuspeciesREADRICHlong)
+#View(ssuspeciesREADRICHlong)
 str(ssuspeciesREADRICHlong)
-tail(ssuspeciesREADRICHlong)
+ssuspeciesREADRICHlong[61,131:137]
 y<-ssuspeciesREADRICHlong$HL
-str(y)
-H<-ssuguildRICH$HL
-S<-ssuguildRICH$Site
+#str(y)
+H<-ssuspeciesREADRICHlong$HL
+S<-ssuspeciesREADRICHlong$Site
+O<-ssuspeciesREADRICHlong$OTU_Richness_Sample
+D<-ssuspeciesREADRICHlong$Description
+Yr<-ssuspeciesREADRICHlong$Year
+Tr<-ssuspeciesREADRICHlong$Treat
+```
 
+```{r}
 length(S)
 length(D)
+length(O)
+length(y)
+length(Tr)
 ?lm
-lm(y~D)
+lmHYr<-lm(y~Yr)
+summary(lmHYr)
+
+lmHYrS<-lm(y~Yr+S)
+summary(lmHYrS)
+
+lmHTrS<-lm(y~S+Tr)
+summary(lmHTrS)
+
+lmHO<-lm(y~O)
+summary(lmHO)
 
 HSite<-lm(y ~ S)
 HSite
 summary(HSite)
+```
+Subset WL (WL HL less than DS)
+WLH <- H[S =="WL"]
+WLO=O[S=="WL"]
+WLTr=Tr[S=="WL"]
+```{r}
+WLH <- H[S =="WL" & Y=="2017"]
+WLO=O[S=="WL" & Y=="2017"]
+WLTr=Tr[S=="WL" & Y=="2017"]
+WLYr=Yr[S=="WL" & Y=="2017"]
+
+length(WLH)
+length(WLO)
+length(WLTr)
+length(WLYr)
+
+
+lmWLHWLTr<-lm(WLH~WLTr)
+summary(lmWLHWLTr)
+
+lmWLHWLYr<-lm(WLH~WLYr)
+summary(lmWLHWLYr)
+
+lmWLOWLTr<-lm(WLO~WLTr)
+summary(lmWLOWLTr)
+
+
+length(WLH)
+
+
+```
+```{r}
+DWLH <- H[(S =="WL" | S== "DS")]
+DWLO=O[(S=="WL" | S== "DS")]
+DWLTr=Tr[(S=="WL" | S== "DS")]
+DWLYr=Yr[(S=="WL" | S== "DS")]
+
+length(DWLH)
+length(DWLO)
+length(DWLTr)
+length(DWLYr)
+
+
+lmDWLHWLTr<-lm(DWLH~DWLTr)
+summary(lmDWLHWLTr)
+
+#lmDWLHWLYr<-lm(DWLH~DWLYr)
+#summary(lmDWLHWLYr)
+
+lmDWLO<-lm(DWLO~WLTr)
+summary(lmWLOWLTr)
+
+
+length(WLH)
+
+
+```
+
+
 
 HD<-lm(y~D)
 HD
